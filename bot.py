@@ -1,12 +1,17 @@
 import logging
 import os
+import sys
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from googletrans import Translator
-from dotenv import load_dotenv
 
-# .env faylini yuklab olish
-load_dotenv()
+# .env faylini yuklab olishga urinish
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("INFO: .env fayli yuklashga urinildi")
+except ImportError:
+    print("INFO: python-dotenv topilmadi, muhit o'zgaruvchilaridan foydalaniladi")
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -14,8 +19,34 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Telegram botning token'ini .env faylidan olish
-TOKEN = os.environ.get("7649664953:AAH7kGKJHV53UT-nvtxTsW8mOWY0OXrhsvA")
+# Token olish usullari:
+# 1. Muhit o'zgaruvchisidan
+# 2. .env faylidan (yuqorida load qilingan)
+# 3. Argumentlar orqali
+# 4. Xavfsizlik uchun: kod ichida saqlangan token (faqat zarurat bo'lganda ishlatilsin)
+
+# Argumentlar orqali token olish
+if len(sys.argv) > 1 and sys.argv[1].startswith('--token='):
+    TOKEN = sys.argv[1].split('=')[1]
+    print("INFO: Token argumentdan olindi")
+# Muhit o'zgaruvchisidan token olish
+elif os.environ.get("TELEGRAM_BOT_TOKEN"):
+    TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+    print("INFO: Token muhit o'zgaruvchisidan olindi")
+# Agar hech qanday token topilmasa, xatolik chiqarish
+else:
+    # Agar hamma usullar ishlamasa, zaxira token (bu xavfsiz emas, faqat test uchun)
+    TOKEN = "7649664953:AAH7kGKJHV53UT-nvtxTsW8mOWY0OXrhsvA"  # Zaxira token
+    print("OGOHLANTIRISH: Zaxira token ishlatilmoqda. Iloji bo'lsa, muhit o'zgaruvchisi orqali sozlang!")
+
+# Token mavjudligini tekshirish
+if not TOKEN:
+    logger.error("XATO: Telegram bot tokeni topilmadi!")
+    print("Token topilmadi. Iltimos quyidagi usullardan birini tanlang:")
+    print("1. TELEGRAM_BOT_TOKEN muhit o'zgaruvchisini o'rnating")
+    print("2. .env faylida TELEGRAM_BOT_TOKEN=<token> satrini yarating")
+    print("3. --token=<token> argumenti bilan skriptni ishga tushiring")
+    sys.exit(1)
 
 # Foydalanuvchilar uchun tarjima yo'nalishini saqlash
 user_translation_mode = {}
@@ -142,19 +173,29 @@ async def unknown_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 def main() -> None:
     """Bot ishga tushishi"""
-    application = Application.builder().token(TOKEN).build()
+    try:
+        # Bot tushirishdan oldin token haqida ma'lumot ko'rsatish
+        logger.info(f"Bot token mavjud: {'Ha' if TOKEN else 'Yo\'q'}")
+        
+        application = Application.builder().token(TOKEN).build()
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("mode", mode_command))
-    
-    application.add_handler(CallbackQueryHandler(button))
-    
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, translate_message))
-    
-    application.add_handler(MessageHandler(filters.COMMAND, unknown_command))
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(CommandHandler("help", help_command))
+        application.add_handler(CommandHandler("mode", mode_command))
+        
+        application.add_handler(CallbackQueryHandler(button))
+        
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, translate_message))
+        
+        application.add_handler(MessageHandler(filters.COMMAND, unknown_command))
 
-    application.run_polling()
+        logger.info("Bot ishga tushirilmoqda...")
+        application.run_polling()
+        
+    except Exception as e:
+        logger.error(f"Bot ishga tushirishda xatolik: {e}")
+        print(f"XATO: Bot ishga tushirishda muammo: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
