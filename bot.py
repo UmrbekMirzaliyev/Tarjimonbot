@@ -15,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Telegram botning token'ini .env faylidan olish
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TOKEN = os.environ.get("7649664953:AAH7kGKJHV53UT-nvtxTsW8mOWY0OXrhsvA")
 
 # Foydalanuvchilar uchun tarjima yo'nalishini saqlash
 user_translation_mode = {}
