@@ -3,7 +3,10 @@ import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from googletrans import Translator
+from dotenv import load_dotenv
 
+# .env faylini yuklab olish
+load_dotenv()
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -11,10 +14,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "7649664953:AAH7kGKJHV53UT-nvtxTsW8mOWY0OXrhsvA")
+# Telegram botning token'ini .env faylidan olish
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 
+# Foydalanuvchilar uchun tarjima yo'nalishini saqlash
 user_translation_mode = {}
 
+# Google Translator obyektini yaratish
 translator = Translator()
 
 async def translate_text(text, dest_lang):
