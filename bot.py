@@ -12,7 +12,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Botning token'i
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN_HERE")
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "7649664953:AAH7kGKJHV53UT-nvtxTsW8mOWY0OXrhsvA")
 
 # Tarjima yo'nalishlarini saqlash uchun foydalanuvchilar lug'ati
 user_translation_mode = {}
